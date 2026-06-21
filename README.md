@@ -216,9 +216,3 @@ This project demonstrates:
 * Software Architecture
 
 ---
-
-## 📄 License
-
-MIT License
-
-Feel free to use, modify, and distribute this project for educational and personal purposes.
