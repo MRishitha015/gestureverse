@@ -1,218 +1,116 @@
-# 🚀 GestureVerse: Anti-Gravity Neon Gesture Game
+# 🚀 GestureVerse: Anti-Gravity Neon Gesture Game (v2)
 
-A real-time computer vision game that transforms hand movements into immersive gameplay using webcam-based gesture tracking.
-
-GestureVerse combines MediaPipe hand tracking, OpenCV, and Pygame to create a futuristic anti-gravity experience where players control a glowing energy orb through natural hand gestures. The project demonstrates real-time computer vision, gesture recognition, physics simulation, and interactive game development.
-
----
-
-## ✨ Features
-
-### 🎮 Gesture-Based Controls
-
-* Real-time hand tracking using MediaPipe
-* Smooth fingertip-based object control
-* Pinch gesture detection for boost actions
-* Fist gesture recognition for pause mode
-* Open-hand tracking for natural navigation
-
-### 🌌 Immersive Visual Experience
-
-* Cyberpunk-inspired neon interface
-* Dynamic particle systems
-* Glowing energy trails
-* Animated collectibles
-* Screen shake effects
-* Combo-based visual feedback
-* Futuristic HUD and overlays
-
-### ⚡ Physics Engine
-
-* Spring-based movement system
-* Velocity damping and inertia
-* Smooth interpolation
-* Responsive anti-gravity mechanics
-* Real-time collision detection
-
-### 📈 Gameplay Systems
-
-* Score tracking
-* Combo multipliers
-* Collectible spawning
-* Dynamic difficulty progression
-* Performance-optimized rendering
+A real-time computer vision game controlled entirely by hand gestures via webcam.
+Built with MediaPipe, OpenCV, and Pygame.
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ What's New in v2
 
-| Technology | Purpose                       |
-| ---------- | ----------------------------- |
-| Python     | Core application              |
-| OpenCV     | Webcam capture and processing |
-| MediaPipe  | Real-time hand tracking       |
-| Pygame     | Rendering and game loop       |
-| NumPy      | Mathematical computations     |
+| Feature | Details |
+|---|---|
+| 🔊 Procedural Audio | Full SFX + ambient drone, no asset files needed |
+| ⭐ XP & Levels | Quadratic XP curve, on-screen XP bar, level-up effects |
+| 🏆 Achievements | 9 unlockable achievements with sliding toast notifications |
+| ⚗️ Power-Ups | Magnet, Shield, Slow-Mo, Double Points — spawn every 12 s |
+| 🌊 One Euro Filter | Lower jitter, velocity-based 2-frame lookahead prediction |
+| ✌️ Peace Gesture | Slow-motion mode (40% time scale) |
+| 🌈 Rainbow Combos | Particles and popups cycle hue at 3× combo+ |
+| 🛡️ Shield Ring | Animated dashed ring when shield is active |
+| 🧲 Magnet Aura | Visual aura + orb pull when magnet is active |
+| ⭐ Star Field | 120 animated background stars |
+| 🎯 Star Orbs | Rotating 4-point star inside collectibles |
+
+---
+
+## 🎮 Controls
+
+| Gesture / Key | Action |
+|---|---|
+| ☝️ Index Finger | Move energy orb |
+| 🤏 Pinch | Activate boost (magenta trail + shake) |
+| ✊ Fist | Pause orb |
+| ✌️ Peace Sign | Slow-motion mode |
+| 🖐️ Open Hand | Normal tracking |
+| **W** | Toggle webcam background |
+| **M** | Toggle mute |
+| **R** | Reset score |
+| **ESC** | Quit |
 
 ---
 
 ## 📦 Installation
 
-### Clone Repository
-
 ```bash
 git clone https://github.com/your-username/gestureverse.git
 cd gestureverse
-```
-
-### Create Virtual Environment
-
-```bash
 python -m venv .venv
-```
-
-### Activate Environment
-
-Windows:
-
-```bash
-.venv\Scripts\activate
-```
-
-macOS / Linux:
-
-```bash
-source .venv/bin/activate
-```
-
-### Install Dependencies
-
-```bash
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
-```
-
-### Run Application
-
-```bash
 python main.py
 ```
 
 ---
 
-## 🎯 Controls
+## 🏗️ Architecture
 
-| Gesture / Key | Action                   |
-| ------------- | ------------------------ |
-| Index Finger  | Move energy orb          |
-| Pinch Gesture | Activate boost           |
-| Open Hand     | Normal tracking mode     |
-| Fist          | Pause movement           |
-| W             | Toggle webcam background |
-| R             | Reset score              |
-| ESC           | Exit game                |
-
----
-
-## 🏗️ Project Architecture
-
-```text
+```
 gestureverse/
-│
-├── main.py
-├── hand_tracker.py
-├── game_objects.py
+├── main.py              # Game loop, rendering, event handling
+├── hand_tracker.py      # MediaPipe + EMA + One Euro Filter + lookahead
+├── game_objects.py      # Ball, particles, collectibles, background
+├── progression.py       # XP, levels, achievements, power-ups, HUD
+├── audio_manager.py     # Procedural SFX + ambient audio (no assets)
 ├── requirements.txt
 └── README.md
 ```
 
-### Core Components
+### New Modules
 
-#### Hand Tracker
+**`audio_manager.py`**
+- Generates all sounds from scratch using ADSR envelopes
+- Named events: `collect`, `combo2`, `combo5`, `boost`, `levelup`, `achieve`, `powerup`, `shield`, `slowmo`, `hover`, `click`, `reset`
+- Ambient drone on loop; master / SFX / music volume controls
 
-* Gesture recognition
-* Landmark extraction
-* EMA smoothing
-* Motion estimation
+**`progression.py`**
+- `XPSystem` — level curve: Lv N needs N²×80 XP
+- `AchievementSystem` — 9 predefined achievements, extensible
+- `PowerUpManager` — spawns & tracks 4 buff types
+- `ToastManager` — slide-in achievement notifications
+- `draw_xp_bar()` — gradient XP bar with level badge
 
-#### Game Objects
+**Updated `hand_tracker.py`**
+- Stage 1: EMA smoothing (α = 0.30)
+- Stage 2: One Euro Filter (adaptive low-pass, removes jitter at rest)
+- Velocity estimation + 2-frame lookahead prediction
+- New gestures: `PEACE` (✌), `THUMBSUP` (👍)
 
-* Orb physics
-* Particle systems
-* Collectibles
-* Combo mechanics
-
-#### Main Engine
-
-* Rendering loop
-* Event handling
-* UI management
-* Performance optimization
+**Updated `game_objects.py`**
+- `NeonBackground` — animated 120-star field
+- `GameObject` — shield ring, magnet aura, rainbow boost trail
+- `CollectibleManager` — magnet pull, double-points flag, ring-burst mode
+- `ComboTracker` — cap raised to 8, combo event callbacks
 
 ---
 
 ## ⚙️ Configuration
 
-| Parameter       | Description         |
-| --------------- | ------------------- |
-| CAMERA_INDEX    | Webcam selection    |
-| FPS_TARGET      | Frame rate target   |
-| ema_alpha       | Tracking smoothness |
-| accel_factor    | Orb acceleration    |
-| damping         | Velocity decay      |
-| PINCH_THRESHOLD | Pinch sensitivity   |
+| Parameter | File | Default | Description |
+|---|---|---|---|
+| `CAMERA_INDEX` | `main.py` | `0` | Webcam index |
+| `FPS_TARGET` | `main.py` | `60` | Frame rate cap |
+| `ema_alpha` | `hand_tracker.py` | `0.30` | EMA smoothing strength |
+| `one_euro_beta` | `hand_tracker.py` | `0.009` | One Euro speed sensitivity |
+| `accel_factor` | `game_objects.py` | `3500` | Orb spring acceleration |
+| `PINCH_THRESHOLD` | `hand_tracker.py` | `0.06` | Pinch detection distance |
+| `MAGNET_RADIUS` | `game_objects.py` | `180 px` | Magnet pull range |
+| `_spawn_interval` | `progression.py` | `12 s` | Power-up spawn rate |
 
 ---
 
-## 🚀 Performance Optimizations
+## 🎓 Skills Demonstrated
 
-* Exponential Moving Average (EMA) smoothing
-* Reduced tracking jitter
-* Efficient frame processing
-* Optimized particle rendering
-* Stable 60 FPS gameplay target
-
----
-
-## 🔍 Troubleshooting
-
-### Camera Not Detected
-
-Try changing:
-
-```python
-CAMERA_INDEX = 1
-```
-
-or
-
-```python
-CAMERA_INDEX = 2
-```
-
-### Low FPS
-
-* Close applications using the webcam
-* Reduce webcam resolution
-* Disable webcam background rendering
-
-### Gesture Detection Issues
-
-* Improve lighting conditions
-* Keep the full hand visible
-* Maintain consistent distance from camera
-
----
-
-## 🎓 Learning Outcomes
-
-This project demonstrates:
-
-* Computer Vision
-* Human-Computer Interaction
-* Real-Time Systems
-* Physics-Based Simulation
-* Gesture Recognition
-* Game Development
-* Software Architecture
-
----
+Computer Vision · Gesture Recognition · Real-Time Signal Processing ·
+Physics Simulation · Game Development · Procedural Audio · Software Architecture ·
+Human-Computer Interaction · Performance Optimization (60 FPS)
