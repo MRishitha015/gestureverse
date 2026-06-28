@@ -71,10 +71,10 @@ def _gen_wave(
     Parameters match the old API exactly so call-sites don't change.
     """
     n = int(sample_rate * duration)
-    a_end   = max(1, int(attack  * sample_rate))
-    d_end   = a_end + max(0, int(decay * sample_rate))
+    a_end = max(1, int(attack * sample_rate))
+    d_end = a_end + max(0, int(decay * sample_rate))
     r_start = max(d_end, n - max(1, int(release * sample_rate)))
-    max_s   = 32767
+    max_s = 32767
 
     mono: List[int] = []
     for i in range(n):
@@ -94,7 +94,8 @@ def _gen_wave(
             raw = math.sin(ph)
 
         if noise_mix > 0.0:
-            raw = raw * (1.0 - noise_mix) + random.uniform(-1.0, 1.0) * noise_mix
+            raw = raw * (1.0 - noise_mix) + \
+                random.uniform(-1.0, 1.0) * noise_mix
 
         # ADSR envelope
         if i < a_end:
@@ -142,12 +143,12 @@ def _raw_mono(
     sample_rate: int = _SR,
 ) -> List[int]:
     """Return a raw list of int16 samples (no envelope) for mixing."""
-    n   = int(sample_rate * duration)
+    n = int(sample_rate * duration)
     max_s = 32767
     out = []
     for i in range(n):
-        t  = i / sample_rate
-        f  = freq + freq_sweep * t
+        t = i / sample_rate
+        f = freq + freq_sweep * t
         ph = 2.0 * math.pi * f * t
         if waveform == "sine":
             raw = math.sin(ph)
@@ -176,29 +177,29 @@ def _build_ambient_pad(music_vol: float, master_vol: float) -> pygame.mixer.Soun
     The pad is 4 seconds long.  55 Hz period = 1/55 s ≈ 0.0182 s.
     4 s / 0.0182 s ≈ 220 complete cycles → exact loop.
     """
-    duration   = 4.0          # seconds
-    n          = int(_SR * duration)
-    max_s      = 32767
+    duration = 4.0          # seconds
+    n = int(_SR * duration)
+    max_s = 32767
 
     # Three layers: root (55 Hz), fifth above (82.5 Hz), subtle detuned (56.2 Hz)
-    freqs      = [55.0, 82.5, 56.2]
-    layer_amp  = [0.45, 0.20, 0.15]
+    freqs = [55.0, 82.5, 56.2]
+    layer_amp = [0.45, 0.20, 0.15]
 
     # Fade-in / fade-out over 10 % of the clip to hide any residual click
-    fade_samp  = int(n * 0.10)
+    fade_samp = int(n * 0.10)
 
     mono: List[int] = [0] * n
     for freq, amp in zip(freqs, layer_amp):
         for i in range(n):
-            t   = i / _SR
+            t = i / _SR
             raw = math.sin(2.0 * math.pi * freq * t) * amp
             mono[i] += int(raw * max_s)
 
     # Apply fade window
     for i in range(fade_samp):
         frac = i / fade_samp
-        mono[i]        = int(mono[i]        * frac)
-        mono[n-1-i]    = int(mono[n-1-i]    * frac)
+        mono[i] = int(mono[i] * frac)
+        mono[n-1-i] = int(mono[n-1-i] * frac)
 
     # Clip and build stereo
     stereo = array.array("h")
@@ -339,19 +340,19 @@ class SoundManager:
     }
 
     # pygame channel assignments
-    _CH_AMBIENT    = 0
-    _CH_SFX_START  = 1
-    _CH_SFX_END    = 6   # channels 1-6 for normal SFX (round-robin)
-    _CH_PRIORITY   = 7   # levelup / achieve interrupt whatever's there
+    _CH_AMBIENT = 0
+    _CH_SFX_START = 1
+    _CH_SFX_END = 6   # channels 1-6 for normal SFX (round-robin)
+    _CH_PRIORITY = 7   # levelup / achieve interrupt whatever's there
 
     def __init__(self) -> None:
         self._cache: Dict[str, pygame.mixer.Sound] = {}
         self._master_vol: float = 1.0
         self._sfx_vol:    float = 0.35   # 35 % — polite, non-intrusive
         self._music_vol:  float = 0.28   # 28 % — subtle background texture
-        self._muted:      bool  = False
+        self._muted:      bool = False
         self._last_played: Dict[str, float] = {}
-        self._sfx_rr:     int  = self._CH_SFX_START   # round-robin channel
+        self._sfx_rr:     int = self._CH_SFX_START   # round-robin channel
 
         # Reserve enough channels
         pygame.mixer.set_num_channels(max(pygame.mixer.get_num_channels(), 8))
@@ -370,14 +371,14 @@ class SoundManager:
     def _start_ambient(self) -> None:
         try:
             snd = _build_ambient_pad(self._music_vol, self._master_vol)
-            ch  = pygame.mixer.Channel(self._CH_AMBIENT)
+            ch = pygame.mixer.Channel(self._CH_AMBIENT)
             ch.set_volume(self._music_vol * self._master_vol)
             ch.play(snd, loops=-1)
             self._ambient_snd = snd
-            self._ambient_ch  = ch
+            self._ambient_ch = ch
         except Exception:
             self._ambient_snd = None
-            self._ambient_ch  = None
+            self._ambient_ch = None
 
     # ── Public API ────────────────────────────────────────────────────── #
     def play(self, name: str) -> None:
@@ -395,7 +396,7 @@ class SoundManager:
             return
 
         now = time.perf_counter()
-        cd  = self._COOLDOWNS.get(name, 0.0)
+        cd = self._COOLDOWNS.get(name, 0.0)
         if now - self._last_played.get(name, 0.0) < cd:
             return
         self._last_played[name] = now
